@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    button {
+        width: 50px;
+        background-color: #ec5e29;
+    }
+</style>
+
+<body>
+    <div id="app">
+        <div>
+            <table border="0">
+                <tr>
+                    <th>序号</th>
+                    <th>商品</th>
+                    <th>数量</th>
+                    <th>价格</th>
+                    <th>上架时间</th>
+                    <th>操作</th>
+                </tr>
+                <tr v-for='(item,index) in database'>
+                    <td>{{item.idList}}</td>
+                    <td>{{item.clothes}}</td>
+                    <td>{{item.quantity}}</td>
+                    <td>{{item.Price}}</td>
+                    <td>{{item.add_time}}</td>
+                    <td>
+                        <button @click=dele(item.idList)>删除</button>
+                        <button @click=edit(item.idList)>编辑</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span>商品:</span><input type="text" v-model="goodsInfo.clothes">
+            <span>数量:</span><input type="text" v-model="goodsInfo.quantity">
+            <span> 价格 :</span><input type="text" v-model="goodsInfo.Price">
+            <button @click='Submit'>提交</button>
+            <button @click='Add'>添加</button>
+
+        </div>
+
+    </div>
+
+</body>
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.js"></script>
+<script>
+    var vm = new Vue({
+        el: "#app",
+        data: {
+            database: [],
+            goodsInfo: {
+                clothes: '',
+                quantity: '',
+                Price: '',
+                idList:''
+            }
+
+        },
+        created: async function () {
+            let result = await axios.get('http://127.0.0.1:4000/index')
+            // console.log(result.data);
+            this.database = result.data
+        },
+
+
+        methods: {
+            edit: async function (idList) {
+                // console.log(idList)
+                let result = await axios.get(`http://127.0.0.1:4000/edit?index=${idList}`)
+                // console.log( result.data[0]);  //{}
+                let { Price, quantity, clothes, } = result.data[0];
+                this.goodsInfo.Price = Price;
+                this.goodsInfo.quantity = quantity;
+                this.goodsInfo.clothes = clothes;
+                this.goodsInfo.idList = idList;
+            },
+            Submit: async function () {
+                let result = await axios.post(`http://127.0.0.1:4000/update`, { goodsInfo: this.goodsInfo })
+                let { code, message } = result.data
+                if (code === 20000) {
+                    alert(message)
+                    let result = await axios.get('http://127.0.0.1:4000/index')
+                    this.database = result.data
+                } else {
+                    alert(message)
+                }
+            },
+
+            dele: async function(idList){
+                let result =  await axios.get(`http://127.0.0.1:4000/dele?index=${idList}`)
+                let { code, message } = result.data
+                if (code === 20002) {
+                    alert(message)
+                    let result = await axios.get('http://127.0.0.1:4000/index')
+                    this.database = result.data
+                } else {
+                    alert(message)
+                }
+
+            },
+            
+            Add:async function(){
+                let result = await axios.post(`http://127.0.0.1:4000/Add`, { goodsInfo: this.goodsInfo })
+                let { code, message } = result.data
+                if (code === 20003) {
+                    alert(message)
+                    let result = await axios.get('http://127.0.0.1:4000/index')
+                    this.database = result.data
+                } else {
+                    alert(message)
+                }
+
+            }
+        },
+
+    })
+
+
+
+
+
+</script>
+
+</html>
